@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>PortfólioApp</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;600&family=Raleway:wght@300;400;600&family=Lato:wght@300;400;700&family=Josefin+Sans:wght@300;400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════ RESET ═══════════════════════ */
+/* ═══════════════ RESET & VARS ═══════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 :root{
@@ -17,32 +18,35 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.7;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,184,.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,212,184,.03)1px,transparent 1px);background-size:60px 60px;pointer-events:none;z-index:0}
 
-/* ═══════════════════════ SCREENS ═══════════════════════ */
+/* ═══════════════ SCREENS ═══════════════ */
 .screen{display:none!important;min-height:100vh;position:relative;z-index:1}
 .screen.active{display:block!important}
+#s-auth.active{display:flex!important;align-items:center;justify-content:center;min-height:100vh;padding:1.1rem;background:var(--bg)}
+#s-confirm.active{display:flex!important;align-items:center;justify-content:center;min-height:100vh;padding:1.1rem;background:var(--bg)}
+#s-recover.active{display:flex!important;align-items:center;justify-content:center;min-height:100vh;padding:1.1rem;background:var(--bg)}
 
-/* ═══════════════════════ FORM ═══════════════════════ */
+/* ═══════════════ INPUTS ═══════════════ */
 input,textarea,select{
   background:var(--bg);border:1px solid var(--bo);border-radius:var(--ra);
   padding:.72rem 1rem;color:var(--tx);font-family:'DM Sans',sans-serif;
-  font-size:16px;outline:none;transition:border-color .2s;width:100%;
-  -webkit-appearance:none;appearance:none;
+  font-size:16px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;
+  -webkit-appearance:none;
 }
 input:focus,textarea:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(0,212,184,.08)}
 select option{background:#0b1120}
-textarea{resize:vertical;min-height:80px;font-size:15px}
+textarea{resize:vertical;min-height:80px}
 .fg{display:flex;flex-direction:column;gap:.38rem;margin-bottom:.9rem}
 .fl{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--mu);letter-spacing:.13em;text-transform:uppercase}
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 @media(max-width:520px){.fr2{grid-template-columns:1fr}}
 
-/* ═══════════════════════ BUTTONS ═══════════════════════ */
+/* ═══════════════ BUTTONS ═══════════════ */
 .btn{
   font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.1em;
   text-transform:uppercase;padding:.78rem 1.5rem;border-radius:var(--ra);
   border:none;cursor:pointer;transition:all .2s;
   display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
-  text-decoration:none;white-space:nowrap;min-height:44px;vertical-align:middle;
+  text-decoration:none;white-space:nowrap;min-height:44px;
 }
 .btn:active{opacity:.85;transform:scale(.97)}
 .ba{background:var(--ac);color:#05090f}.ba:hover{background:#00bfa8}
@@ -52,27 +56,46 @@ textarea{resize:vertical;min-height:80px;font-size:15px}
 .bsm{padding:.4rem .9rem;font-size:.65rem;min-height:36px}
 .bxs{padding:.24rem .55rem;font-size:.59rem;min-height:28px}
 .bfw{width:100%}
+.btn-lnk{background:none;border:none;color:var(--ac);cursor:pointer;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.08em;text-decoration:underline;text-underline-offset:2px;min-height:36px;padding:.2rem 0;transition:opacity .18s}
+.btn-lnk:hover{opacity:.75}
 
 /* Tags */
 .tl{display:flex;flex-wrap:wrap;gap:.38rem;margin-top:.38rem}
 .tag{font-size:.76rem;padding:.28rem .7rem;background:rgba(0,212,184,.06);border:1px solid rgba(0,212,184,.2);border-radius:2px;color:#94a3b8;display:inline-flex;align-items:center;gap:.32rem}
-.tag .rx{cursor:pointer;color:var(--re);line-height:1;font-size:.88rem}
+.tag .rx{cursor:pointer;color:var(--re);line-height:1}
 .trow{display:flex;gap:.38rem;margin-top:.38rem}
 .trow input{flex:1}
 
-/* ═══════════════════════ TOAST ═══════════════════════ */
+/* ═══════════════ TOAST ═══════════════ */
 #toast{
   position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(12px);
   background:var(--su);border:1px solid var(--ac);border-radius:50px;
   padding:.58rem 1.3rem;font-family:'DM Mono',monospace;font-size:.7rem;
   color:var(--ac);letter-spacing:.08em;z-index:9999;opacity:0;
-  transition:all .25s;pointer-events:none;max-width:90vw;text-align:center;
+  transition:all .25s;pointer-events:none;max-width:92vw;text-align:center;
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.err{border-color:var(--re);color:var(--re)}
-#toast.ok{border-color:var(--ac);color:var(--ac)}
 
-/* ═══════════════════════ MODALS ═══════════════════════ */
+/* ═══════════════ AUTH WRAPPERS ═══════════════ */
+.aw{width:100%;max-width:420px}
+.abk{font-family:'DM Mono',monospace;font-size:.66rem;color:var(--mu);letter-spacing:.09em;text-transform:uppercase;background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1.5rem;transition:color .18s;padding:0;min-height:36px}
+.abk:hover{color:var(--ac)}
+.ab{background:var(--su);border:1px solid var(--bo);border-top:3px solid var(--ac);border-radius:6px;padding:1.7rem 1.4rem}
+@media(min-width:480px){.ab{padding:2.1rem 2rem}}
+.at{font-family:'Cormorant Garamond',serif;font-size:1.82rem;font-weight:600;margin-bottom:.18rem}
+.as2{font-family:'DM Mono',monospace;font-size:.64rem;color:var(--mu);letter-spacing:.13em;text-transform:uppercase;margin-bottom:1.5rem}
+.ah2{font-family:'DM Mono',monospace;font-size:.61rem;color:var(--mu);line-height:1.6;margin-bottom:.8rem;padding:.65rem .85rem;background:rgba(0,212,184,.03);border:1px solid rgba(0,212,184,.1);border-radius:3px}
+.atog{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--mu);text-align:center;margin-top:.85rem}
+.atog button,.atog a{background:none;border:none;color:var(--ac);cursor:pointer;font-family:inherit;font-size:inherit;text-decoration:underline;text-underline-offset:2px;min-height:36px}
+
+/* Email config banner */
+.email-banner{background:rgba(201,165,90,.06);border:1px solid rgba(201,165,90,.22);border-radius:4px;padding:.85rem 1rem;font-family:'DM Mono',monospace;font-size:.63rem;color:var(--go);letter-spacing:.06em;line-height:1.7;margin-bottom:1.1rem}
+.email-banner b{color:var(--tx)}
+.email-banner a{color:var(--ac);text-decoration:underline}
+.em2{font-family:'DM Mono',monospace;font-size:.66rem;color:var(--re);letter-spacing:.07em;min-height:.82rem;margin-bottom:.5rem}
+
+/* ═══════════════ MODALS ═══════════════ */
 .ov{display:none;position:fixed;inset:0;background:rgba(2,5,12,.9);backdrop-filter:blur(10px);z-index:600;align-items:flex-end;justify-content:center;padding:0}
 .ov.open{display:flex}
 @media(min-width:600px){.ov{align-items:center;padding:1.5rem}}
@@ -88,12 +111,11 @@ textarea{resize:vertical;min-height:80px;font-size:15px}
 @media(min-width:600px){.mhandle{display:none}}
 .mt2{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;margin-bottom:.18rem}
 .ms2{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--mu);letter-spacing:.13em;text-transform:uppercase;margin-bottom:1.4rem}
-.mc2{position:absolute;top:.85rem;right:.85rem;background:transparent;border:none;color:var(--mu);font-size:1rem;cursor:pointer;padding:.35rem;line-height:1;min-height:36px;min-width:36px;display:flex;align-items:center;justify-content:center;transition:color .18s;border-radius:3px}
+.mc2{position:absolute;top:.85rem;right:.85rem;background:transparent;border:none;color:var(--mu);font-size:1rem;cursor:pointer;padding:.35rem;min-height:36px;min-width:36px;display:flex;align-items:center;justify-content:center;transition:all .18s;border-radius:3px}
 .mc2:hover{color:var(--tx);background:rgba(255,255,255,.05)}
 .mf2{display:flex;justify-content:flex-end;gap:.55rem;margin-top:1.3rem;padding-top:.9rem;border-top:1px solid var(--bo);flex-wrap:wrap}
-.em2{font-family:'DM Mono',monospace;font-size:.66rem;color:var(--re);letter-spacing:.07em;min-height:.82rem;margin-bottom:.5rem}
 
-/* ═══════════════════════ HOME ═══════════════════════ */
+/* ═══════════════ HOME ═══════════════ */
 #s-home nav{
   position:sticky;top:0;z-index:100;
   display:flex;justify-content:space-between;align-items:center;
@@ -105,8 +127,8 @@ textarea{resize:vertical;min-height:80px;font-size:15px}
 .logo{font-family:'DM Mono',monospace;font-size:.88rem;color:var(--ac);letter-spacing:.15em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
 .logo b{color:var(--go)}
 #hnav{display:flex;align-items:center;gap:.45rem;flex-shrink:0}
-.hn-name{font-family:'DM Mono',monospace;font-size:.67rem;color:var(--mu);display:none;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(min-width:500px){.hn-name{display:block;max-width:160px}}
+.hn-name{font-family:'DM Mono',monospace;font-size:.67rem;color:var(--mu);display:none;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(min-width:500px){.hn-name{display:block}}
 
 /* Hero */
 .h-hero{max-width:1100px;margin:0 auto;padding:3rem 1.1rem 2.8rem;display:flex;flex-direction:column;gap:2.2rem}
@@ -125,8 +147,7 @@ textarea{resize:vertical;min-height:80px;font-size:15px}
 .hf:last-child{border-bottom:none;padding-bottom:0}
 .hf-ic{width:29px;height:29px;background:rgba(0,212,184,.07);border:1px solid rgba(0,212,184,.16);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.82rem}
 .hf-tx{font-size:.83rem;color:#94a3b8;line-height:1.5}
-
-/* Gallery — hidden by default */
+/* Gallery */
 .gal-wrap{max-width:1100px;margin:0 auto;padding:0 1.1rem 4rem}
 @media(min-width:769px){.gal-wrap{padding:0 3rem 5rem}}
 .gal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem;flex-wrap:wrap;gap:.5rem}
@@ -140,8 +161,8 @@ textarea{resize:vertical;min-height:80px;font-size:15px}
 .pc-img{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,212,184,.35)}
 .pc-ini{width:50px;height:50px;border-radius:50%;background:rgba(0,212,184,.09);border:2px solid rgba(0,212,184,.23);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--ac)}
 .pc-dot{width:8px;height:8px;border-radius:50%;background:var(--ac);position:absolute;top:.55rem;right:.55rem}
-.pc-link{position:absolute;top:.35rem;right:.35rem;background:rgba(5,9,15,.75);border:1px solid var(--bo);border-radius:50px;padding:.26rem .6rem;font-family:'DM Mono',monospace;font-size:.56rem;color:var(--mu);cursor:pointer;opacity:0;transition:all .2s}
-.pc:hover .pc-link{opacity:1}.pc-link:hover{color:var(--ac);border-color:var(--ac)}
+.pc-lnk{position:absolute;top:.35rem;right:.35rem;background:rgba(5,9,15,.75);border:1px solid var(--bo);border-radius:50px;padding:.26rem .6rem;font-family:'DM Mono',monospace;font-size:.56rem;color:var(--mu);cursor:pointer;opacity:0;transition:all .2s}
+.pc:hover .pc-lnk{opacity:1}.pc-lnk:hover{color:var(--ac);border-color:var(--ac)}
 .pc-body{padding:.9rem 1.1rem}
 .pc-name{font-family:'Cormorant Garamond',serif;font-size:1.08rem;font-weight:600;margin-bottom:.1rem}
 .pc-area{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--ac);letter-spacing:.09em;text-transform:uppercase;margin-bottom:.4rem}
@@ -149,33 +170,19 @@ textarea{resize:vertical;min-height:80px;font-size:15px}
 .empty-g{text-align:center;padding:2.8rem 1.5rem;border:1px dashed var(--bo);border-radius:6px}
 .empty-g p{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--mu);letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.1rem}
 
-/* ═══════════════════════ AUTH SCREEN ═══════════════════════ */
-#s-auth{display:none!important;align-items:center;justify-content:center;min-height:100vh;padding:1.1rem;background:var(--bg)}
-#s-auth.active{display:flex!important}
-.aw{width:100%;max-width:420px}
-.abk{font-family:'DM Mono',monospace;font-size:.66rem;color:var(--mu);letter-spacing:.09em;text-transform:uppercase;background:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1.5rem;transition:color .18s;padding:0;min-height:36px}
-.abk:hover{color:var(--ac)}
-.ab{background:var(--su);border:1px solid var(--bo);border-top:3px solid var(--ac);border-radius:6px;padding:1.7rem 1.4rem}
-@media(min-width:480px){.ab{padding:2.1rem 2rem}}
-.at{font-family:'Cormorant Garamond',serif;font-size:1.82rem;font-weight:600;margin-bottom:.18rem}
-.as2{font-family:'DM Mono',monospace;font-size:.64rem;color:var(--mu);letter-spacing:.13em;text-transform:uppercase;margin-bottom:1.5rem}
-.ah{font-family:'DM Mono',monospace;font-size:.61rem;color:var(--mu);line-height:1.6;margin-bottom:.8rem;padding:.65rem .85rem;background:rgba(0,212,184,.03);border:1px solid rgba(0,212,184,.1);border-radius:3px}
-.atog{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--mu);text-align:center;margin-top:.85rem}
-.atog button{background:none;border:none;color:var(--ac);cursor:pointer;font-family:inherit;font-size:inherit;text-decoration:underline;text-underline-offset:2px;min-height:36px}
-
-/* ═══════════════════════ PORTFOLIO SCREEN ═══════════════════════ */
+/* ═══════════════ PORTFOLIO TOPBAR ═══════════════ */
 #topbar{
   position:sticky;top:0;z-index:200;
   display:flex;align-items:center;justify-content:space-between;
   padding:.72rem .9rem;
   background:rgba(5,9,15,.96);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--bo);gap:.45rem;flex-wrap:nowrap;
+  border-bottom:1px solid var(--bo);gap:.45rem;
 }
 @media(min-width:600px){#topbar{padding:.82rem 1.8rem}}
 .tb-l{display:flex;align-items:center;gap:.5rem;min-width:0;flex:1;overflow:hidden}
-.tb-own{font-family:'DM Mono',monospace;font-size:.64rem;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100px;flex-shrink:1}
-@media(min-width:480px){.tb-own{max-width:180px}}
-@media(min-width:769px){.tb-own{max-width:280px;font-size:.7rem}}
+.tb-own{font-family:'DM Mono',monospace;font-size:.64rem;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px}
+@media(min-width:480px){.tb-own{max-width:160px}}
+@media(min-width:769px){.tb-own{max-width:260px;font-size:.7rem}}
 .tb-r{display:flex;align-items:center;gap:.38rem;flex-shrink:0}
 .edb{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--ac);letter-spacing:.1em;text-transform:uppercase;display:none;align-items:center;gap:.36rem;padding:.26rem .6rem;background:rgba(0,212,184,.05);border:1px solid rgba(0,212,184,.16);border-radius:50px;white-space:nowrap}
 .edb .dot{width:5px;height:5px;border-radius:50%;background:var(--ac);animation:blink 1.4s infinite;flex-shrink:0}
@@ -186,7 +193,7 @@ body.em .ea{display:flex}
 .el-btn{display:flex}
 body.em .el-btn{display:none}
 
-/* ─── PTF CSS vars ─── */
+/* ═══════════════ PORTFOLIO CSS VARS ═══════════════ */
 #ptf{
   --pb:#080c14;--ps:#0d1320;--ps2:#111927;--pbr:#1e2d45;
   --pa:#00d4b8;--pa2:#0088cc;--pt:#e2e8f0;--pm:#64748b;--pg:#c9a55a;
@@ -195,18 +202,14 @@ body.em .el-btn{display:none}
   background:var(--pb);color:var(--pt);font-family:var(--pbf);min-height:100vh;
 }
 .ta{text-align:var(--pal)}
-
 /* Edit buttons */
 .sec-ed{position:absolute;top:.65rem;right:.65rem;display:none;z-index:10}
 body.em .sec-ed{display:block}
 .pe-btns{display:none;position:absolute;top:.6rem;right:.6rem;gap:.32rem}
 body.em .pe-btns{display:flex}
-#apb{display:none}
-body.em #apb{display:inline-flex}
-#pje button{display:none}
-body.em #pje button{display:inline-flex}
-
-/* Photo */
+#apb{display:none}body.em #apb{display:inline-flex}
+#pje button{display:none}body.em #pje button{display:inline-flex}
+/* Photo circle */
 .ph-wrap{display:flex;flex-direction:column;align-items:center;gap:.6rem}
 .ph-circ{width:130px;height:130px;border-radius:50%;border:2px dashed var(--pa);background:var(--ps);display:flex;align-items:center;justify-content:center;cursor:default;position:relative;overflow:hidden;transition:all .25s;flex-shrink:0}
 @media(min-width:769px){.ph-circ{width:155px;height:155px}}
@@ -223,28 +226,22 @@ body.em .ph-circ.fp:hover .ph-ov{display:flex}
 .ph-lbl{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--pm);letter-spacing:.09em;text-transform:uppercase;cursor:default;display:none;transition:color .18s}
 body.em .ph-lbl{display:block;cursor:pointer}
 body.em .ph-lbl:hover{color:var(--pa)}
-
-/* Img slots */
+/* Image slots */
 .is{aspect-ratio:16/9;background:var(--pb);border:1px dashed var(--pbr);border-radius:3px;display:none;align-items:center;justify-content:center;cursor:default;position:relative;overflow:hidden;transition:border-color .2s}
-.is.fi{display:flex}
-body.em .is{display:flex;cursor:pointer}
+.is.fi{display:flex}body.em .is{display:flex;cursor:pointer}
 body.em .is:not(.fi):hover{border-color:var(--pa);background:rgba(0,212,184,.03)}
 .is img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
-.is.fi img{display:block}
-.is.fi .is-ph{display:none}
+.is.fi img{display:block}.is.fi .is-ph{display:none}
 .is-ph{display:flex;flex-direction:column;align-items:center;gap:.22rem;opacity:.2;pointer-events:none}
 .is-ph span{font-size:1.1rem}.is-ph p{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--pm)}
 .is-ov{position:absolute;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;gap:.38rem}
 body.em .is.fi:hover .is-ov{display:flex}
 .is-btn{font-family:'DM Mono',monospace;font-size:.55rem;letter-spacing:.05em;text-transform:uppercase;padding:.24rem .52rem;border-radius:2px;border:1px solid;cursor:pointer;background:transparent}
-.is-btn-c{border-color:var(--pa);color:var(--pa)}
-.is-btn-d{border-color:#e55;color:#e55}
+.is-btn-c{border-color:var(--pa);color:var(--pa)}.is-btn-d{border-color:#e55;color:#e55}
 .as2-btn{aspect-ratio:16/9;background:transparent;border:1px dashed rgba(0,212,184,.16);border-radius:3px;display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .22s;color:var(--pa);opacity:.38}
-body.em .as2-btn{display:flex}
-.as2-btn:hover{opacity:1;border-color:var(--pa)}
+body.em .as2-btn{display:flex}.as2-btn:hover{opacity:1;border-color:var(--pa)}
 .as2-btn span{font-size:1.25rem;line-height:1}
 .as2-btn p{font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;margin-top:.18rem}
-
 /* PTF Layout */
 .pi{max-width:1100px;margin:0 auto}
 .ptf-hero{padding:3rem 1.1rem 2.2rem;display:flex;flex-direction:column;gap:1.8rem;position:relative}
@@ -254,7 +251,6 @@ body.em .as2-btn{display:flex}
 .ptf-alt{background:var(--ps);padding:3.2rem 0;position:relative}
 .ptf-alt .pi{padding:0 1.1rem}
 @media(min-width:769px){.ptf-alt .pi{padding:0 3rem}}
-
 .sl{font-family:'DM Mono',monospace;font-size:.67rem;color:var(--pa);letter-spacing:.19em;text-transform:uppercase;margin-bottom:.65rem;display:flex;align-items:center;gap:.55rem}
 .sl::after{content:'';flex:1;height:1px;background:var(--pbr);max-width:60px}
 .sh{font-family:var(--phf);font-size:calc(clamp(1.75rem,5vw,2.5rem) * var(--psc));font-weight:300;line-height:1.15;margin-bottom:2.3rem;color:var(--pt)}
@@ -265,7 +261,7 @@ body.em .as2-btn{display:flex}
 .ptl{font-family:'DM Mono',monospace;font-size:calc(.83rem * var(--psc));color:var(--pg);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.4rem}
 .pbi{font-size:calc(.96rem * var(--psc));color:#94a3b8;line-height:1.85;margin-bottom:2rem}
 .pbtns{display:flex;gap:.75rem;flex-wrap:wrap}
-.ptfbtn{font-family:'DM Mono',monospace;font-size:calc(.71rem * var(--psc));letter-spacing:.1em;text-transform:uppercase;text-decoration:none;padding:.74rem 1.55rem;border-radius:2px;transition:all .22s;display:inline-block;cursor:pointer;border:none;min-height:42px}
+.ptfbtn{font-family:'DM Mono',monospace;font-size:calc(.71rem * var(--psc));letter-spacing:.1em;text-transform:uppercase;text-decoration:none;padding:.74rem 1.55rem;border-radius:2px;transition:all .22s;display:inline-block;cursor:pointer;border:none;min-height:42px;vertical-align:middle}
 .ptfbtn-p{background:var(--pa);color:var(--pb)}.ptfbtn-p:hover{opacity:.85;transform:translateY(-2px)}
 .ptfbtn-o{background:transparent;color:var(--pa);border:1px solid var(--pa)}.ptfbtn-o:hover{background:rgba(0,212,184,.07);transform:translateY(-2px)}
 .stp{background:var(--ps);border:1px solid var(--pbr);border-radius:4px;padding:1.55rem;position:relative;overflow:hidden}
@@ -293,8 +289,7 @@ body.em .as2-btn{display:flex}
 .sktags{display:flex;flex-wrap:wrap;gap:.4rem}
 .sktag{font-size:calc(.77rem * var(--psc));padding:.38rem .88rem;background:var(--pb);border:1px solid var(--pbr);border-radius:2px;color:#cbd5e1;transition:all .22s;cursor:default}
 .sktag:hover{border-color:var(--pa);color:var(--pa);background:rgba(0,212,184,.04)}
-.sktag.s{border-color:rgba(201,165,90,.26);color:#a0885e}
-.sktag.s:hover{border-color:var(--pg);color:var(--pg)}
+.sktag.s{border-color:rgba(201,165,90,.26);color:#a0885e}.sktag.s:hover{border-color:var(--pg);color:var(--pg)}
 .pjl{display:flex;flex-direction:column;gap:1.45rem}
 .pj{background:var(--ps);border:1px solid var(--pbr);border-left:3px solid var(--pa);border-radius:0 4px 4px 0;padding:1.45rem 1.65rem;transition:all .25s;position:relative}
 @media(min-width:600px){.pj{padding:1.6rem 1.9rem}}
@@ -319,8 +314,7 @@ body.em .as2-btn{display:flex}
 .tl-dot{display:none;position:absolute;left:133px;top:2px;width:12px;height:12px;background:var(--pb);border:2px solid var(--pa);border-radius:50%;z-index:1}
 .tld{font-family:'DM Mono',monospace;font-size:calc(.68rem * var(--psc));color:var(--pm);font-weight:500}
 @media(min-width:600px){.tld{text-align:right;padding-top:.08rem}}
-.tlb{padding-left:0}
-@media(min-width:600px){.tlb{padding-left:1.1rem}}
+.tlb{padding-left:0}@media(min-width:600px){.tlb{padding-left:1.1rem}}
 .tlbt{font-family:var(--phf);font-size:calc(1.12rem * var(--psc));font-weight:600;margin-bottom:.2rem;color:var(--pt)}
 .tlbo{font-family:'DM Mono',monospace;font-size:calc(.67rem * var(--psc));color:var(--pa);letter-spacing:.08em;margin-bottom:.48rem}
 .tlbd{font-size:calc(.84rem * var(--psc));color:#94a3b8;line-height:1.64}
@@ -348,13 +342,13 @@ body.em .as2-btn{display:flex}
 .pft{text-align:center;padding:1.5rem 1rem;border-top:1px solid var(--pbr);font-family:'DM Mono',monospace;font-size:.62rem;color:var(--pm);letter-spacing:.07em}
 .nd{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--pm)}
 
-/* ═══════════════════════ CUSTOMIZE PANEL ═══════════════════════ */
+/* ═══════════════ CUSTOMIZE PANEL ═══════════════ */
 #czp{position:fixed;top:0;right:-100%;width:100%;height:100vh;background:var(--su);border-left:1px solid var(--bo);z-index:300;overflow-y:auto;transition:right .3s cubic-bezier(.4,0,.2,1)}
 @media(min-width:480px){#czp{width:330px}}
 #czp.open{right:0}
 .czh{padding:.95rem 1.3rem;border-bottom:1px solid var(--bo);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--su);z-index:1}
 .czh-t{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--ac);letter-spacing:.11em;text-transform:uppercase}
-.czh-c{background:none;border:none;color:var(--mu);font-size:.9rem;cursor:pointer;padding:.35rem;min-height:38px;min-width:38px;display:flex;align-items:center;justify-content:center;border-radius:3px;transition:all .18s}
+.czh-c{background:none;border:none;color:var(--mu);cursor:pointer;padding:.35rem;min-height:38px;min-width:38px;display:flex;align-items:center;justify-content:center;border-radius:3px;font-size:.9rem;transition:all .18s}
 .czh-c:hover{color:var(--tx);background:rgba(255,255,255,.05)}
 .czts{display:flex;border-bottom:1px solid var(--bo);padding:0 1.3rem}
 .czt{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;padding:.7rem .82rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--mu);cursor:pointer;transition:all .18s;margin-bottom:-1px;min-height:40px}
@@ -376,11 +370,13 @@ body.em .as2-btn{display:flex}
 .sz,.al{flex:1;padding:.48rem .26rem;border-radius:2px;border:1px solid var(--bo);background:transparent;color:var(--mu);cursor:pointer;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.04em;text-transform:uppercase;transition:all .18s;text-align:center;min-height:36px}
 .sz.on,.al.on,.sz:hover,.al:hover{border-color:var(--ac);color:var(--ac);background:rgba(0,212,184,.05)}
 .al{font-size:.88rem;display:flex;align-items:center;justify-content:center}
+
+@media(max-width:420px){.hide-xs{display:none}}
 </style>
 </head>
 <body>
 
-<!-- ══════ SCREEN: HOME ══════ -->
+<!-- ══════ HOME ══════ -->
 <div id="s-home" class="screen active">
   <nav>
     <div class="logo">Portfólio<b>App</b></div>
@@ -391,9 +387,7 @@ body.em .as2-btn{display:flex}
       <div class="h-tag">Criador de portfólios</div>
       <h1>Mostre seu trabalho<br>ao <b>mundo</b></h1>
       <p>Crie um portfólio profissional personalizado, proteja com senha e compartilhe seu link exclusivo.</p>
-      <div class="h-btns" id="hero-btns">
-        <!-- populated by renderHeroBtns() -->
-      </div>
+      <div class="h-btns" id="hero-btns"></div>
     </div>
     <div class="hcard">
       <div class="hc-lbl">// Recursos incluídos</div>
@@ -404,16 +398,13 @@ body.em .as2-btn{display:flex}
       <div class="hf"><div class="hf-ic">📱</div><div class="hf-tx">100% responsivo — celular e desktop</div></div>
     </div>
   </div>
-  <!-- Gallery: hidden by default, shown on "Ver Exemplos" click -->
   <div class="gal-wrap" id="gal-wrap" style="display:none">
-    <div class="gal-hdr">
-      <div class="gal-ttl">Portfólios criados</div>
-    </div>
+    <div class="gal-hdr"><div class="gal-ttl">Portfólios criados</div></div>
     <div class="gal-grid" id="gg"></div>
   </div>
 </div>
 
-<!-- ══════ SCREEN: AUTH ══════ -->
+<!-- ══════ AUTH ══════ -->
 <div id="s-auth" class="screen">
   <div class="aw">
     <button class="abk" onclick="goHome()">← Voltar ao início</button>
@@ -426,6 +417,9 @@ body.em .as2-btn{display:flex}
         <div class="fg"><label class="fl">Senha</label><input type="password" id="li-p" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
         <div class="em2" id="li-err"></div>
         <button class="btn ba bfw" onclick="doLogin()">Entrar</button>
+        <div style="text-align:center;margin-top:.7rem">
+          <button class="btn-lnk" onclick="showScreen('recover');recoverMode('account')">Esqueci minha senha</button>
+        </div>
         <div class="atog" id="tog-reg">Não tem conta? <button onclick="authMode('r')">Criar agora</button></div>
       </div>
       <!-- REGISTER -->
@@ -439,46 +433,83 @@ body.em .as2-btn{display:flex}
           <div class="fg"><label class="fl">Senha da conta</label><input type="password" id="rg-p" placeholder="Mín. 6 caracteres" autocomplete="new-password"></div>
           <div class="fg"><label class="fl">Senha do editor</label><input type="password" id="rg-ep" placeholder="Mín. 4 caracteres" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()"></div>
         </div>
-        <div class="ah">💡 <b style="color:var(--tx)">Senha da conta</b> = login aqui. &nbsp;<b style="color:var(--tx)">Senha do editor</b> = editar o portfólio em qualquer dispositivo.</div>
+        <div class="ah2">💡 <b style="color:var(--tx)">Senha da conta</b> = login aqui. &nbsp;<b style="color:var(--tx)">Senha do editor</b> = editar o portfólio em qualquer dispositivo.</div>
         <div class="em2" id="rg-err"></div>
-        <button class="btn ba bfw" onclick="doRegister()">Confirmar e-mail →</button>
+        <button class="btn ba bfw" id="btn-register" onclick="doRegister()">Enviar código de verificação →</button>
         <div class="atog">Já tem conta? <button onclick="authMode('l')">Entrar</button></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════ SCREEN: EMAIL CONFIRM ══════ -->
+<!-- ══════ EMAIL CONFIRM ══════ -->
 <div id="s-confirm" class="screen">
   <div class="aw">
     <button class="abk" onclick="authMode('r');showScreen('auth')">← Voltar ao cadastro</button>
     <div class="ab">
       <div class="at">Confirme seu e-mail</div>
       <div class="as2">// Verificação de conta</div>
-      <p style="color:#94a3b8;font-size:.93rem;line-height:1.75;margin-bottom:1.4rem">
-        Um código de verificação foi enviado para <b id="conf-email" style="color:var(--tx)"></b>.<br>
-        Digite o código abaixo para ativar sua conta.
+      <p style="color:#94a3b8;font-size:.93rem;line-height:1.75;margin-bottom:1.3rem">
+        Um código de 6 dígitos foi enviado para<br>
+        <b id="conf-email" style="color:var(--tx)"></b>
       </p>
-      <!-- Demo note -->
-      <div style="background:rgba(201,165,90,.06);border:1px solid rgba(201,165,90,.22);border-radius:4px;padding:.85rem 1rem;margin-bottom:1.2rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--go);letter-spacing:.06em;line-height:1.7">
-        ⚠ MODO DEMONSTRAÇÃO<br>
-        <span style="color:var(--mu)">Como este é um app local sem servidor de e-mail, o código é exibido aqui. Em produção, seria enviado por e-mail.</span><br>
-        Código: <b id="conf-code-show" style="color:var(--tx);font-size:.88rem;letter-spacing:.22em"></b>
-      </div>
+      <div id="email-status-box" class="email-banner" style="display:none"></div>
       <div class="fg">
         <label class="fl">Código de verificação (6 dígitos)</label>
-        <input type="text" id="conf-input" placeholder="000000" maxlength="6" inputmode="numeric" style="letter-spacing:.25em;font-size:1.1rem;text-align:center" onkeydown="if(event.key==='Enter')doConfirm()">
+        <input type="text" id="conf-input" placeholder="000000" maxlength="6" inputmode="numeric" style="letter-spacing:.25em;font-size:1.2rem;text-align:center" onkeydown="if(event.key==='Enter')doConfirm()">
       </div>
       <div class="em2" id="conf-err"></div>
-      <button class="btn ba bfw" onclick="doConfirm()">Verificar código →</button>
-      <div style="text-align:center;margin-top:.85rem">
-        <button onclick="resendCode()" style="background:none;border:none;color:var(--mu);cursor:pointer;font-family:'DM Mono',monospace;font-size:.67rem;letter-spacing:.08em;text-decoration:underline;text-underline-offset:2px;min-height:36px">Reenviar código</button>
+      <button class="btn ba bfw" onclick="doConfirm()">Verificar e criar conta →</button>
+      <div style="text-align:center;margin-top:.8rem">
+        <button class="btn-lnk" onclick="resendCode()">Reenviar código</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════ SCREEN: PORTFOLIO ══════ -->
+<!-- ══════ PASSWORD RECOVERY ══════ -->
+<div id="s-recover" class="screen">
+  <div class="aw" style="max-width:440px">
+    <button class="abk" onclick="authMode('l');showScreen('auth')">← Voltar ao login</button>
+    <div class="ab">
+      <!-- STEP 1: enter email -->
+      <div id="rec-s1">
+        <div class="at">Recuperar senha</div>
+        <div class="as2" id="rec-subtitle">// Senha da conta</div>
+        <div style="display:flex;gap:.5rem;margin-bottom:1.3rem;flex-wrap:wrap">
+          <button class="btn bsm" id="rec-tab-ac" onclick="recoverMode('account')" style="flex:1">Senha da conta</button>
+          <button class="btn bsm" id="rec-tab-ed" onclick="recoverMode('editor')" style="flex:1">Senha do editor</button>
+        </div>
+        <p style="color:#94a3b8;font-size:.88rem;line-height:1.72;margin-bottom:1.2rem" id="rec-desc">
+          Informe o e-mail da sua conta para receber um código de redefinição da <b style="color:var(--tx)">senha de acesso</b>.
+        </p>
+        <div class="fg"><label class="fl">E-mail da conta</label><input type="email" id="rec-email" placeholder="seu@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')sendRecovery()"></div>
+        <div class="em2" id="rec-err"></div>
+        <div id="rec-email-status" class="email-banner" style="display:none"></div>
+        <button class="btn ba bfw" onclick="sendRecovery()">Enviar código →</button>
+      </div>
+      <!-- STEP 2: code + new password -->
+      <div id="rec-s2" style="display:none">
+        <div class="at">Redefinir senha</div>
+        <div class="as2">// Código enviado para <span id="rec-s2-email" style="color:var(--tx)"></span></div>
+        <div id="rec-s2-status" class="email-banner" style="display:none"></div>
+        <div class="fg"><label class="fl">Código de verificação</label>
+          <input type="text" id="rec-code" placeholder="000000" maxlength="6" inputmode="numeric" style="letter-spacing:.22em;font-size:1.1rem;text-align:center">
+        </div>
+        <div class="fg"><label class="fl" id="rec-newpass-label">Nova senha da conta</label>
+          <input type="password" id="rec-newpass" placeholder="Mín. 6 caracteres" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRecover()">
+        </div>
+        <div class="em2" id="rec-s2-err"></div>
+        <button class="btn ba bfw" onclick="doRecover()">Redefinir senha</button>
+        <div style="text-align:center;margin-top:.8rem">
+          <button class="btn-lnk" onclick="sendRecovery()">Reenviar código</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PORTFOLIO ══════ -->
 <div id="s-portfolio" class="screen">
   <div id="topbar">
     <div class="tb-l">
@@ -487,7 +518,7 @@ body.em .as2-btn{display:flex}
       <div class="edb"><div class="dot"></div><span class="hide-xs">Editor</span></div>
     </div>
     <div class="tb-r">
-      <button class="btn bg2 bsm" onclick="shareLink()" title="Copiar link do portfólio">🔗 <span class="hide-xs">Compartilhar</span></button>
+      <button class="btn bg2 bsm" onclick="shareLink()">🔗 <span class="hide-xs">Compartilhar</span></button>
       <div class="ea">
         <button class="btn bo2 bsm" onclick="openCz()">🎨 <span class="hide-xs">Personalizar</span></button>
         <button class="btn bg2 bsm" onclick="exitEdit()">✕ <span class="hide-xs">Sair</span></button>
@@ -535,7 +566,7 @@ body.em .as2-btn{display:flex}
           <option>DM Sans</option><option>Lato</option>
           <option>Montserrat</option><option>Raleway</option><option>Inter</option>
         </select>
-        <div class="fn-p" id="czb-prev" style="font-size:.86rem">Texto de exemplo do portfólio.</div>
+        <div class="fn-p" id="czb-prev" style="font-size:.86rem">Texto de exemplo.</div>
       </div>
     </div>
     <div class="czs2" id="czs-layout">
@@ -562,7 +593,6 @@ body.em .as2-btn{display:flex}
 </div>
 
 <!-- ══════ MODALS ══════ -->
-
 <!-- Editor login -->
 <div class="ov" id="m-edl">
   <div class="mb" style="max-width:370px">
@@ -573,15 +603,16 @@ body.em .as2-btn{display:flex}
       <input type="password" id="ed-pw" placeholder="Senha definida no cadastro" onkeydown="if(event.key==='Enter')doEdLogin()">
     </div>
     <div class="em2" id="ed-err"></div>
+    <div style="text-align:center;margin-bottom:.5rem">
+      <button class="btn-lnk" onclick="closeM('m-edl');showScreen('recover');recoverMode('editor')">Esqueci a senha do editor</button>
+    </div>
     <div class="mf2"><button class="btn ba" onclick="doEdLogin()">Acessar Editor</button></div>
   </div>
 </div>
-
-<!-- Personal info -->
+<!-- Personal -->
 <div class="ov" id="m-per">
   <div class="mb">
-    <span class="mhandle"></span>
-    <button class="mc2" onclick="closeM('m-per')">✕</button>
+    <span class="mhandle"></span><button class="mc2" onclick="closeM('m-per')">✕</button>
     <div class="mt2">Informações Pessoais</div><div class="ms2">// Hero do portfólio</div>
     <div class="fg"><label class="fl">Nome completo</label><input id="ep-nm" type="text"></div>
     <div class="fr2">
@@ -601,12 +632,10 @@ body.em .as2-btn{display:flex}
     <div class="mf2"><button class="btn bg2" onclick="closeM('m-per')">Cancelar</button><button class="btn ba" onclick="savePer()">Salvar</button></div>
   </div>
 </div>
-
 <!-- About -->
 <div class="ov" id="m-abt">
   <div class="mb">
-    <span class="mhandle"></span>
-    <button class="mc2" onclick="closeM('m-abt')">✕</button>
+    <span class="mhandle"></span><button class="mc2" onclick="closeM('m-abt')">✕</button>
     <div class="mt2">Sobre Mim</div><div class="ms2">// Apresentação pessoal</div>
     <div class="fg"><label class="fl">Texto principal</label><textarea id="ea-tx" rows="5"></textarea></div>
     <div class="fg">
@@ -626,12 +655,10 @@ body.em .as2-btn{display:flex}
     <div class="mf2"><button class="btn bg2" onclick="closeM('m-abt')">Cancelar</button><button class="btn ba" onclick="saveAbt()">Salvar</button></div>
   </div>
 </div>
-
 <!-- Skills -->
 <div class="ov" id="m-sk">
   <div class="mb">
-    <span class="mhandle"></span>
-    <button class="mc2" onclick="closeM('m-sk')">✕</button>
+    <span class="mhandle"></span><button class="mc2" onclick="closeM('m-sk')">✕</button>
     <div class="mt2">Habilidades</div><div class="ms2">// Hard &amp; Soft Skills</div>
     <div class="fg">
       <label class="fl">Hard Skills (técnicas)</label>
@@ -646,12 +673,10 @@ body.em .as2-btn{display:flex}
     <div class="mf2"><button class="btn bg2" onclick="closeM('m-sk')">Cancelar</button><button class="btn ba" onclick="saveSk()">Salvar</button></div>
   </div>
 </div>
-
 <!-- Project -->
 <div class="ov" id="m-pr">
   <div class="mb wide">
-    <span class="mhandle"></span>
-    <button class="mc2" onclick="closeM('m-pr')">✕</button>
+    <span class="mhandle"></span><button class="mc2" onclick="closeM('m-pr')">✕</button>
     <div class="mt2" id="mp-ttl">Projeto</div><div class="ms2">// Adicionar / editar</div>
     <input type="hidden" id="ep-ix">
     <div class="fr2">
@@ -663,21 +688,17 @@ body.em .as2-btn{display:flex}
     <div class="mf2"><button class="btn bg2" onclick="closeM('m-pr')">Cancelar</button><button class="btn ba" onclick="savePr()">Salvar Projeto</button></div>
   </div>
 </div>
-
 <!-- Edu/Exp -->
 <div class="ov" id="m-edu">
   <div class="mb">
-    <span class="mhandle"></span>
-    <button class="mc2" onclick="closeM('m-edu')">✕</button>
+    <span class="mhandle"></span><button class="mc2" onclick="closeM('m-edu')">✕</button>
     <div class="mt2">Trajetória</div><div class="ms2">// Formação e experiência</div>
     <div class="fg">
       <label class="fl">Formação acadêmica</label>
       <div id="ee-el"></div>
       <div class="fr2" style="margin-top:.38rem">
-        <input id="ee-et" placeholder="Curso / Graduação">
-        <input id="ee-ei" placeholder="Instituição">
-        <input id="ee-elv" placeholder="Nível">
-        <input id="ee-eb" placeholder="Status (Ex: Concluído)">
+        <input id="ee-et" placeholder="Curso / Graduação"><input id="ee-ei" placeholder="Instituição">
+        <input id="ee-elv" placeholder="Nível"><input id="ee-eb" placeholder="Status (Ex: Concluído)">
       </div>
       <button class="btn bo2 bsm" style="margin-top:.45rem" onclick="addEdu()">+ Formação</button>
     </div>
@@ -685,22 +706,18 @@ body.em .as2-btn{display:flex}
       <label class="fl">Experiência profissional</label>
       <div id="ee-xl"></div>
       <div class="fr2" style="margin-top:.38rem">
-        <input id="ee-xt" placeholder="Cargo / Função">
-        <input id="ee-xo" placeholder="Empresa">
-        <input id="ee-xd" placeholder="Período">
-        <input id="ee-xs" placeholder="Descrição breve">
+        <input id="ee-xt" placeholder="Cargo / Função"><input id="ee-xo" placeholder="Empresa">
+        <input id="ee-xd" placeholder="Período"><input id="ee-xs" placeholder="Descrição breve">
       </div>
       <button class="btn bo2 bsm" style="margin-top:.45rem" onclick="addExp()">+ Experiência</button>
     </div>
     <div class="mf2"><button class="btn bg2" onclick="closeM('m-edu')">Cancelar</button><button class="btn ba" onclick="saveEdu()">Salvar</button></div>
   </div>
 </div>
-
 <!-- Contact -->
 <div class="ov" id="m-ct">
   <div class="mb">
-    <span class="mhandle"></span>
-    <button class="mc2" onclick="closeM('m-ct')">✕</button>
+    <span class="mhandle"></span><button class="mc2" onclick="closeM('m-ct')">✕</button>
     <div class="mt2">Contato</div><div class="ms2">// Links e informações</div>
     <div class="fg"><label class="fl">E-mail de contato</label><input id="ec-em" type="email"></div>
     <div class="fg"><label class="fl">LinkedIn (URL)</label><input id="ec-li" type="url" placeholder="https://linkedin.com/in/…"></div>
@@ -713,15 +730,23 @@ body.em .as2-btn{display:flex}
 </div>
 
 <div id="toast"></div>
-<style>
-@media(max-width:420px){.hide-xs{display:none}}
-</style>
 
 <script>
 'use strict';
-// ═══════════════════════════════════
-//  THEMES
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
+//  EMAILJS CONFIG
+//  → Crie uma conta GRATUITA em emailjs.com
+//  → Substitua os valores abaixo pelos seus
+// ═══════════════════════════════════════
+const EJ = {
+  publicKey:  'YOUR_EMAILJS_PUBLIC_KEY',   // Account → API Keys
+  serviceId:  'YOUR_SERVICE_ID',           // Email Services → Service ID
+  templateId: 'YOUR_TEMPLATE_ID',          // Email Templates → Template ID
+  configured: false, // mude para true após configurar
+};
+// Template deve ter as variáveis: {{to_email}}, {{to_name}}, {{subject}}, {{code}}, {{message}}
+// ═══════════════════════════════════════
+
 const THEMES={
   dark:  {lbl:'Escuro',  pb:'#080c14',ps:'#0d1320',pbr:'#1e2d45',pt:'#e2e8f0',pm:'#64748b',d:'#1e2d45'},
   light: {lbl:'Claro',   pb:'#f4f6fa',ps:'#ffffff',pbr:'#dde3ec',pt:'#1a202c',pm:'#718096',d:'#e2e8f0'},
@@ -729,19 +754,12 @@ const THEMES={
   forest:{lbl:'Floresta',pb:'#061310',ps:'#0a1e18',pbr:'#0f2c22',pt:'#e2e8f0',pm:'#4a7c68',d:'#0f2c22'},
 };
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  STORAGE
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 const DB={
   _g(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}},
-  _s(k,v){
-    try{localStorage.setItem(k,JSON.stringify(v));return true}
-    catch(e){
-      if(e.name==='QuotaExceededError')toast('⚠ Armazenamento cheio! Remova imagens antigas.',1);
-      else toast('Erro ao salvar: '+e.message,1);
-      return false;
-    }
-  },
+  _s(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){toast('Erro ao salvar: '+e.message,1);return false}},
   users(){return this._g('ptf_u')||{}},
   ptfs(){return this._g('ptf_p')||{}},
   su(u){return this._s('ptf_u',u)},
@@ -751,81 +769,139 @@ const DB={
   clrSess(){try{localStorage.removeItem('ptf_s')}catch{}},
 };
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  STATE
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 const S={
   user:null, ptfId:null, editMode:false,
   czTheme:'dark', czSc:'1', czAl:'left',
   tSts:[], tVals:[], tDiffs:[], tHard:[], tSoft:[], tEdu:[], tExp:[],
   pPi:-1, pSi:-1,
-  // pending register
   pendReg:null, pendCode:null,
+  recCode:null, recEmail:null, recType:'account',
 };
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  UTILS
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function hash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h=h&h}return Math.abs(h).toString(16)}
 function uid(){return 'p_'+Date.now()+'_'+Math.random().toString(36).slice(2,6)}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function gv(id){return(document.getElementById(id)||{value:''}).value.trim()}
-function sv(id,val){const el=document.getElementById(id);if(el)el.value=val||''}
+function sv(id,v){const el=document.getElementById(id);if(el)el.value=v||''}
 function genCode(){return String(Math.floor(100000+Math.random()*900000))}
 
 let _tt;
 function toast(msg,err=0){
   const t=document.getElementById('toast');
-  t.textContent=msg;t.className='show'+(err?' err':' ok');
-  clearTimeout(_tt);_tt=setTimeout(()=>{t.className=''},3200);
+  t.textContent=msg;t.className='show'+(err?' err':'');
+  clearTimeout(_tt);_tt=setTimeout(()=>{t.className=''},3400);
 }
 
-// ═══════════════════════════════════
-//  SCREEN MANAGEMENT
-// ═══════════════════════════════════
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
-  const el=document.getElementById('s-'+id);
-  if(el){el.classList.add('active');}
-  window.scrollTo({top:0,behavior:'instant'});
+// ═══════════════════════════════════════
+//  EMAIL (EmailJS or fallback)
+// ═══════════════════════════════════════
+function sendEmail(toEmail, toName, subject, code, message){
+  return new Promise((resolve, reject)=>{
+    if(!EJ.configured || EJ.publicKey==='YOUR_EMAILJS_PUBLIC_KEY'){
+      // EmailJS not configured — use fallback
+      resolve({status:'fallback', code});
+      return;
+    }
+    emailjs.init(EJ.publicKey);
+    emailjs.send(EJ.serviceId, EJ.templateId, {
+      to_email: toEmail,
+      to_name: toName,
+      subject: subject,
+      code: code,
+      message: message,
+    }).then(()=>resolve({status:'sent'}))
+      .catch(err=>reject(err));
+  });
 }
 
-// ═══════════════════════════════════
-//  HASH ROUTING
-// ═══════════════════════════════════
+function showEmailStatus(boxId, code, email){
+  const box=document.getElementById(boxId);
+  if(!box)return;
+  if(EJ.configured && EJ.publicKey!=='YOUR_EMAILJS_PUBLIC_KEY'){
+    box.style.display='block';
+    box.innerHTML=`✅ <b>Código enviado</b> para <b>${email}</b>.<br>Verifique sua caixa de entrada (e a pasta de spam).`;
+    box.style.color='var(--ac)';
+    box.style.borderColor='rgba(0,212,184,.3)';
+  } else {
+    box.style.display='block';
+    box.innerHTML=`⚠ <b>MODO DEMONSTRAÇÃO</b> — EmailJS não configurado.<br>
+      Configure em <a href="https://www.emailjs.com" target="_blank" rel="noopener">emailjs.com</a> e atualize as chaves no topo do código.<br><br>
+      Código para este teste: <b style="font-size:1.1rem;letter-spacing:.2em;color:var(--tx)">${code}</b>`;
+    box.style.color='var(--go)';
+    box.style.borderColor='rgba(201,165,90,.3)';
+  }
+}
+
+// ═══════════════════════════════════════
+//  SCREEN ROUTING
+//  ── Only intercept #portfolio/ID hashes ──
+//  ── Regular anchors (#section-id) pass through normally ──
+// ═══════════════════════════════════════
+const PORTFOLIO_HASH_PREFIX = '#portfolio/';
+
 function parseHash(){
   const h=window.location.hash;
-  if(h.startsWith('#ptf/')){return{page:'ptf',id:h.slice(5)}}
-  return{page:'home'};
+  if(h.startsWith(PORTFOLIO_HASH_PREFIX)) return {page:'ptf', id:h.slice(PORTFOLIO_HASH_PREFIX.length)};
+  return {page:'home'};
 }
-function setHash(pid){
-  const url=window.location.href.split('#')[0]+(pid?'#ptf/'+pid:'');
+
+function setPortfolioHash(pid){
+  const url=window.location.href.split('#')[0]+(pid ? PORTFOLIO_HASH_PREFIX+pid : '');
   history.replaceState(null,'',url);
 }
+
+// hashchange: only react to our custom #portfolio/ prefix
 window.addEventListener('hashchange',()=>{
-  const r=parseHash();
-  if(r.page==='ptf'){
-    const ptf=DB.ptfs()[r.id];
-    if(ptf) openPtf(r.id,false);
+  const h=window.location.hash;
+  if(h.startsWith(PORTFOLIO_HASH_PREFIX)){
+    const id=h.slice(PORTFOLIO_HASH_PREFIX.length);
+    const ptf=DB.ptfs()[id];
+    if(ptf) openPtf(id,!!(S.user&&S.user.pid===id));
     else{toast('Portfólio não encontrado.',1);goHome();}
-  } else goHome();
+  }
+  // All other hashes (anchors like #ptf-proj, #ptf-ct) are ignored — browser handles natively
 });
 
 function shareLink(){
-  const url=window.location.href.split('#')[0]+'#ptf/'+S.ptfId;
+  const base=window.location.href.split('#')[0];
+  const url=base+PORTFOLIO_HASH_PREFIX+S.ptfId;
   if(navigator.clipboard){
     navigator.clipboard.writeText(url).then(()=>toast('🔗 Link copiado! Compartilhe com qualquer pessoa.'));
   } else {
     const i=document.createElement('input');i.value=url;
-    document.body.appendChild(i);i.select();
-    document.execCommand('copy');document.body.removeChild(i);
+    document.body.appendChild(i);i.select();document.execCommand('copy');document.body.removeChild(i);
     toast('🔗 Link copiado!');
   }
 }
 
-// ═══════════════════════════════════
-//  NAV & HERO BUTTONS
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
+//  SHOW SCREEN
+// ═══════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('s-'+id);
+  if(el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+function goHome(){
+  S.editMode=false;document.body.classList.remove('em');
+  closeCz();
+  setPortfolioHash(null);
+  showScreen('home');
+  renderNav();
+  document.getElementById('gal-wrap').style.display='none';
+}
+
+// ═══════════════════════════════════════
+//  NAV & HERO
+// ═══════════════════════════════════════
 function renderNav(){
   const w=document.getElementById('hnav');
   if(S.user){
@@ -843,13 +919,12 @@ function renderNav(){
 
 function renderHeroBtns(){
   const w=document.getElementById('hero-btns');
+  if(!w)return;
   if(S.user){
-    // logged in: show "Meu portfólio" + "Ver Exemplos"
     w.innerHTML=`
       <button class="btn ba" onclick="openPtf('${S.user.pid}',true)">✦ Meu portfólio</button>
       <button class="btn bg2" onclick="toggleGallery()">Ver Exemplos</button>`;
   } else {
-    // not logged in: show "Criar" + "Ver Exemplos"
     w.innerHTML=`
       <button class="btn ba" onclick="authMode('r');showScreen('auth')">✦ Criar meu Portfólio</button>
       <button class="btn bg2" onclick="toggleGallery()">Ver Exemplos</button>`;
@@ -858,146 +933,180 @@ function renderHeroBtns(){
 
 function toggleGallery(){
   const w=document.getElementById('gal-wrap');
-  if(w.style.display==='none'){
-    w.style.display='block';
-    renderGallery();
+  if(w.style.display==='none'||!w.style.display){
+    w.style.display='block';renderGallery();
     setTimeout(()=>w.scrollIntoView({behavior:'smooth',block:'start'}),80);
   } else {
     w.style.display='none';
   }
 }
 
-// ═══════════════════════════════════
-//  NAVIGATION HELPERS
-// ═══════════════════════════════════
-function goHome(){
-  S.editMode=false;document.body.classList.remove('em');
-  closeCz();
-  setHash(null);
-  showScreen('home');
-  renderNav();
-  // hide gallery when going home
-  document.getElementById('gal-wrap').style.display='none';
-}
-
-// ═══════════════════════════════════
-//  AUTH: LOGIN
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
+//  AUTH: MODE TOGGLE
+// ═══════════════════════════════════════
 function authMode(m){
   document.getElementById('af-li').style.display  = m==='l'?'block':'none';
   document.getElementById('af-rg').style.display  = m==='r'?'block':'none';
   document.getElementById('tog-reg').style.display= m==='l'?'block':'none';
-  // clear fields
   ['li-e','li-p','rg-n','rg-a','rg-e','rg-p','rg-ep'].forEach(id=>sv(id,''));
   document.getElementById('li-err').textContent='';
   document.getElementById('rg-err').textContent='';
 }
 
+// ═══════════════════════════════════════
+//  AUTH: LOGIN
+// ═══════════════════════════════════════
 function doLogin(){
   const email=gv('li-e').toLowerCase(), pass=gv('li-p');
-  const errEl=document.getElementById('li-err');
-  errEl.textContent='';
+  const errEl=document.getElementById('li-err');errEl.textContent='';
   if(!email||!pass){errEl.textContent='Preencha todos os campos.';return}
-  const users=DB.users();
-  const u=users[email];
+  const u=DB.users()[email];
   if(!u){errEl.textContent='E-mail não encontrado.';return}
   if(u.ph!==hash(pass)){errEl.textContent='Senha incorreta.';return}
   if(!u.confirmed){errEl.textContent='Conta não confirmada. Verifique seu e-mail.';return}
-  // SUCCESS
-  S.user=u;
-  DB.setSess(email);
-  renderNav();
-  openPtf(S.user.pid, true);
+  S.user=u;DB.setSess(email);
+  renderNav();openPtf(S.user.pid,true);
 }
 
-// ═══════════════════════════════════
-//  AUTH: REGISTER (step 1 → send code)
-// ═══════════════════════════════════
-function doRegister(){
-  const n=gv('rg-n'), a=gv('rg-a'), e=gv('rg-e').toLowerCase();
-  const p=gv('rg-p'), ep=gv('rg-ep');
-  const errEl=document.getElementById('rg-err');
-  errEl.textContent='';
+// ═══════════════════════════════════════
+//  AUTH: REGISTER step 1 — send code
+// ═══════════════════════════════════════
+async function doRegister(){
+  const n=gv('rg-n'),a=gv('rg-a'),e=gv('rg-e').toLowerCase(),p=gv('rg-p'),ep=gv('rg-ep');
+  const errEl=document.getElementById('rg-err');errEl.textContent='';
   if(!n||!a||!e||!p||!ep){errEl.textContent='Preencha todos os campos.';return}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){errEl.textContent='E-mail inválido.';return}
   if(p.length<6){errEl.textContent='Senha da conta: mínimo 6 caracteres.';return}
   if(ep.length<4){errEl.textContent='Senha do editor: mínimo 4 caracteres.';return}
-  const users=DB.users();
-  if(users[e]){errEl.textContent='Este e-mail já está cadastrado.';return}
-  // generate code and store pending registration
+  if(DB.users()[e]){errEl.textContent='Este e-mail já está cadastrado.';return}
+  const btn=document.getElementById('btn-register');
+  btn.textContent='Enviando…';btn.disabled=true;
   const code=genCode();
   S.pendReg={n,a,e,ph:hash(p),eph:hash(ep)};
   S.pendCode=code;
-  // show confirmation screen
+  try{
+    await sendEmail(e,n,'Código de verificação — PortfólioApp',code,
+      `Seu código de verificação é: ${code}\n\nUse-o para confirmar seu cadastro no PortfólioApp.`);
+  } catch(err){ console.warn('EmailJS error:',err); }
+  btn.textContent='Enviar código de verificação →';btn.disabled=false;
   document.getElementById('conf-email').textContent=e;
-  document.getElementById('conf-code-show').textContent=code;
-  document.getElementById('conf-input').value='';
   document.getElementById('conf-err').textContent='';
+  sv('conf-input','');
+  showEmailStatus('email-status-box',code,e);
   showScreen('confirm');
-  toast('Código gerado. Em produção seria enviado por e-mail.');
 }
 
-// ═══════════════════════════════════
-//  AUTH: EMAIL CONFIRM (step 2)
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
+//  AUTH: CONFIRM CODE
+// ═══════════════════════════════════════
 function doConfirm(){
   const code=gv('conf-input');
-  const errEl=document.getElementById('conf-err');
-  errEl.textContent='';
+  const errEl=document.getElementById('conf-err');errEl.textContent='';
   if(!code){errEl.textContent='Digite o código.';return}
   if(!S.pendReg||!S.pendCode){errEl.textContent='Sessão expirada. Tente novamente.';showScreen('auth');return}
   if(code!==S.pendCode){errEl.textContent='Código incorreto. Verifique e tente novamente.';return}
-  // create account
+  // Create account
   const pid=uid();
   const users=DB.users();
-  users[S.pendReg.e]={
-    name:S.pendReg.n, area:S.pendReg.a, email:S.pendReg.e,
-    ph:S.pendReg.ph, eph:S.pendReg.eph, pid, confirmed:true, created:Date.now()
-  };
+  users[S.pendReg.e]={name:S.pendReg.n,area:S.pendReg.a,email:S.pendReg.e,ph:S.pendReg.ph,eph:S.pendReg.eph,pid,confirmed:true,created:Date.now()};
   if(!DB.su(users))return;
-  const ptfs=DB.ptfs();
-  ptfs[pid]=mkDef(S.pendReg.n, S.pendReg.a, S.pendReg.e);
+  const ptfs=DB.ptfs();ptfs[pid]=mkDef(S.pendReg.n,S.pendReg.a,S.pendReg.e);
   if(!DB.sp(ptfs))return;
-  // clear pending
-  S.pendReg=null; S.pendCode=null;
-  // send to login
-  toast('Conta criada! Faça login para continuar. ✓');
+  const savedEmail=S.pendReg.e;
+  S.pendReg=null;S.pendCode=null;
+  toast('✅ Conta criada! Faça login para continuar.');
   authMode('l');
-  // pre-fill email for convenience
-  setTimeout(()=>{ sv('li-e', users[Object.keys(users).pop()].email || ''); }, 50);
+  setTimeout(()=>sv('li-e',savedEmail),60);
   showScreen('auth');
 }
 
-function resendCode(){
+async function resendCode(){
   if(!S.pendReg){toast('Sessão expirada. Volte ao cadastro.',1);return}
-  const code=genCode();
-  S.pendCode=code;
-  document.getElementById('conf-code-show').textContent=code;
-  document.getElementById('conf-input').value='';
-  document.getElementById('conf-err').textContent='';
+  const code=genCode();S.pendCode=code;sv('conf-input','');document.getElementById('conf-err').textContent='';
+  try{ await sendEmail(S.pendReg.e,S.pendReg.n,'Novo código — PortfólioApp',code,`Seu novo código é: ${code}`); } catch(e){}
+  showEmailStatus('email-status-box',code,S.pendReg.e);
   toast('Novo código gerado.');
 }
 
+// ═══════════════════════════════════════
+//  PASSWORD RECOVERY
+// ═══════════════════════════════════════
+function recoverMode(type){
+  S.recType=type;
+  const isAcc=type==='account';
+  const btnAc=document.getElementById('rec-tab-ac');
+  const btnEd=document.getElementById('rec-tab-ed');
+  btnAc.className='btn bsm '+(isAcc?'ba':'bg2');
+  btnEd.className='btn bsm '+(isAcc?'bg2':'ba');
+  document.getElementById('rec-desc').innerHTML=isAcc
+    ? 'Informe o e-mail da sua conta para receber um código de redefinição da <b style="color:var(--tx)">senha de acesso</b>.'
+    : 'Informe o e-mail da conta para redefinir a <b style="color:var(--tx)">senha do editor</b> do seu portfólio.';
+  document.getElementById('rec-newpass-label').textContent=isAcc?'Nova senha da conta (mín. 6 caracteres)':'Nova senha do editor (mín. 4 caracteres)';
+  // reset
+  document.getElementById('rec-s1').style.display='block';
+  document.getElementById('rec-s2').style.display='none';
+  sv('rec-email','');sv('rec-code','');sv('rec-newpass','');
+  document.getElementById('rec-err').textContent='';
+  document.getElementById('rec-s2-err').textContent='';
+  document.getElementById('rec-email-status').style.display='none';
+}
+
+async function sendRecovery(){
+  const email=gv('rec-email').toLowerCase();
+  const errEl=document.getElementById('rec-err');errEl.textContent='';
+  if(!email){errEl.textContent='Informe o e-mail.';return}
+  const users=DB.users();
+  if(!users[email]){errEl.textContent='E-mail não encontrado.';return}
+  const code=genCode();
+  S.recCode=code;S.recEmail=email;
+  try{ await sendEmail(email,users[email].name,'Código de recuperação — PortfólioApp',code,`Seu código de recuperação é: ${code}\n\nUse-o para redefinir sua senha.`); } catch(e){}
+  showEmailStatus('rec-email-status',code,email);
+  document.getElementById('rec-s2-email').textContent=email;
+  document.getElementById('rec-s1').style.display='none';
+  document.getElementById('rec-s2').style.display='block';
+  const statusBox=document.getElementById('rec-s2-status');
+  statusBox.style.display='block';
+  statusBox.innerHTML=document.getElementById('rec-email-status').innerHTML;
+  statusBox.style.color=document.getElementById('rec-email-status').style.color;
+  statusBox.style.borderColor=document.getElementById('rec-email-status').style.borderColor;
+  sv('rec-code','');sv('rec-newpass','');
+  document.getElementById('rec-s2-err').textContent='';
+}
+
+function doRecover(){
+  const code=gv('rec-code'),newpass=gv('rec-newpass');
+  const errEl=document.getElementById('rec-s2-err');errEl.textContent='';
+  if(!code||!newpass){errEl.textContent='Preencha todos os campos.';return}
+  if(!S.recCode||!S.recEmail){errEl.textContent='Sessão expirada.';return}
+  if(code!==S.recCode){errEl.textContent='Código incorreto.';return}
+  const minLen=S.recType==='account'?6:4;
+  if(newpass.length<minLen){errEl.textContent=`Mínimo ${minLen} caracteres.`;return}
+  const users=DB.users();
+  if(S.recType==='account') users[S.recEmail].ph=hash(newpass);
+  else users[S.recEmail].eph=hash(newpass);
+  if(!DB.su(users))return;
+  S.recCode=null;S.recEmail=null;
+  const label=S.recType==='account'?'Senha da conta':'Senha do editor';
+  toast(`✅ ${label} redefinida com sucesso!`);
+  authMode('l');showScreen('auth');
+}
+
 function doLogout(){
-  S.user=null;S.editMode=false;
-  document.body.classList.remove('em');
-  DB.clrSess();closeCz();
-  setHash(null);
-  showScreen('home');
-  renderNav();
+  S.user=null;S.editMode=false;document.body.classList.remove('em');
+  DB.clrSess();closeCz();setPortfolioHash(null);
+  showScreen('home');renderNav();
   document.getElementById('gal-wrap').style.display='none';
   toast('Sessão encerrada.');
 }
 
 function restoreSess(){
   const e=DB.sess();if(!e)return;
-  const u=DB.users()[e];
-  if(u&&u.confirmed)S.user=u;
+  const u=DB.users()[e];if(u&&u.confirmed)S.user=u;
 }
 
-// ═══════════════════════════════════
-//  DEFAULT PORTFOLIO DATA
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
+//  DEFAULT PORTFOLIO
+// ═══════════════════════════════════════
 function mkDef(name,area,email){
   return{
     name,area,email,tagline:'Tecnologia · Criatividade · Inovação',
@@ -1014,36 +1123,28 @@ function mkDef(name,area,email){
   };
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  OPEN / SAVE PORTFOLIO
-// ═══════════════════════════════════
-function openPtf(pid, asOwner=false){
+// ═══════════════════════════════════════
+function openPtf(pid,asOwner=false){
   const ptf=DB.ptfs()[pid];
   if(!ptf){toast('Portfólio não encontrado.',1);return}
-  S.ptfId=pid;S.editMode=false;
-  document.body.classList.remove('em');
+  S.ptfId=pid;S.editMode=false;document.body.classList.remove('em');
   document.getElementById('tb-own').textContent=ptf.name;
   applyCz(ptf.cz||{});
   renderPtf(ptf);
-  setHash(pid);
+  setPortfolioHash(pid);
   showScreen('portfolio');
   if(asOwner&&S.user&&S.user.pid===pid) enterEdit();
 }
 function getPtf(){return DB.ptfs()[S.ptfId]}
-function savePtf(ptf){
-  const all=DB.ptfs();all[S.ptfId]=ptf;
-  return DB.sp(all);
-}
+function savePtf(ptf){const all=DB.ptfs();all[S.ptfId]=ptf;return DB.sp(all)}
 
-// ═══════════════════════════════════
-//  EDIT MODE
-// ═══════════════════════════════════
 function enterEdit(){S.editMode=true;document.body.classList.add('em')}
 function exitEdit(){S.editMode=false;document.body.classList.remove('em');closeCz();toast('Modo editor desativado.')}
 
 function doEdLogin(){
-  const pw=gv('ed-pw'), errEl=document.getElementById('ed-err');
-  errEl.textContent='';
+  const pw=gv('ed-pw'),errEl=document.getElementById('ed-err');errEl.textContent='';
   if(!pw){errEl.textContent='Digite a senha.';return}
   const owner=Object.values(DB.users()).find(u=>u.pid===S.ptfId);
   if(!owner){errEl.textContent='Proprietário não encontrado.';return}
@@ -1051,16 +1152,12 @@ function doEdLogin(){
   closeM('m-edl');enterEdit();toast('Modo editor ativo! ✓');
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  RENDER PORTFOLIO
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function renderPtf(ptf){
   const el=document.getElementById('ptf');
-
-  const stats=(ptf.stats||[]).map(s=>
-    `<div class="str"><span class="strl">${esc(s.l)}</span><span class="strv ta">${esc(s.v)}</span></div>`
-  ).join('');
-
+  const stats=(ptf.stats||[]).map(s=>`<div class="str"><span class="strl">${esc(s.l)}</span><span class="strv ta">${esc(s.v)}</span></div>`).join('');
   const projs=(ptf.projects||[]);
   let pjHTML='';
   if(projs.length){
@@ -1074,10 +1171,7 @@ function renderPtf(ptf){
           </div>
         </div>`).join('');
       const n=(p.imgs||[]).length;
-      const emp=Array.from({length:Math.max(0,2-n)},()=>`
-        <div class="is" onclick="slAdd(${i},event)">
-          <div class="is-ph"><span>＋</span><p>Imagem</p></div>
-        </div>`).join('');
+      const emp=Array.from({length:Math.max(0,2-n)},()=>`<div class="is" onclick="slAdd(${i},event)"><div class="is-ph"><span>＋</span><p>Imagem</p></div></div>`).join('');
       return `<div class="pj">
         <div class="pe-btns">
           <button class="btn bo2 bxs" onclick="openPrEdit(${i})">✏</button>
@@ -1099,41 +1193,25 @@ function renderPtf(ptf){
       <button class="btn bo2 bsm" onclick="openPrNew()">+ Adicionar projeto</button>
     </div>`;
   }
-
   const exp=(ptf.experience||[]).map(e=>`
     <div class="tli">
       <div class="tld">${esc(e.date||'')}</div>
       <div class="tl-dot"></div>
-      <div class="tlb">
-        <div class="tlbt ta">${esc(e.title||'')}</div>
-        <div class="tlbo">${esc(e.org||'')}</div>
-        <div class="tlbd ta">${esc(e.desc||'')}</div>
-      </div>
+      <div class="tlb"><div class="tlbt ta">${esc(e.title||'')}</div><div class="tlbo">${esc(e.org||'')}</div><div class="tlbd ta">${esc(e.desc||'')}</div></div>
     </div>`).join('');
-
   const edu=(ptf.education||[]).map(e=>`
-    <div class="educ">
-      <div class="edul">${esc(e.level||'')}</div>
-      <div class="edut ta">${esc(e.title||'')}</div>
-      <div class="edui">${esc(e.inst||'')}</div>
-      <span class="edub">${esc(e.badge||'')}</span>
-    </div>`).join('');
-
+    <div class="educ"><div class="edul">${esc(e.level||'')}</div><div class="edut ta">${esc(e.title||'')}</div><div class="edui">${esc(e.inst||'')}</div><span class="edub">${esc(e.badge||'')}</span></div>`).join('');
   const vals=(ptf.values||[]).map(v=>`<span class="vtag ta">${esc(v)}</span>`).join('');
-  const diffs=(ptf.diffs||[]).map(d=>`
-    <div class="di">
-      <div class="di-ic">${d.icon||'•'}</div>
-      <div class="di-tx ta">${esc(d.text||'')}</div>
-    </div>`).join('');
+  const diffs=(ptf.diffs||[]).map(d=>`<div class="di"><div class="di-ic">${d.icon||'•'}</div><div class="di-tx ta">${esc(d.text||'')}</div></div>`).join('');
   const hs=(ptf.hard||[]).map(s=>`<span class="sktag ta">${esc(s)}</span>`).join('');
   const ss=(ptf.soft||[]).map(s=>`<span class="sktag s ta">${esc(s)}</span>`).join('');
-
   const cl=[];
   if(ptf.email)    cl.push(`<a href="mailto:${esc(ptf.email)}" class="cl"><div class="cl-ic">✉</div><div><div class="cl-lb">Email</div><div class="cl-vl ta">${esc(ptf.email)}</div></div></a>`);
   if(ptf.linkedin) cl.push(`<a href="${esc(ptf.linkedin)}" target="_blank" rel="noopener" class="cl"><div class="cl-ic">in</div><div><div class="cl-lb">LinkedIn</div><div class="cl-vl ta">${esc(ptf.linkedin.replace(/^https?:\/\//,''))}</div></div></a>`);
   if(ptf.github)   cl.push(`<a href="${esc(ptf.github)}" target="_blank" rel="noopener" class="cl"><div class="cl-ic">&lt;/&gt;</div><div><div class="cl-lb">GitHub</div><div class="cl-vl ta">${esc(ptf.github.replace(/^https?:\/\//,''))}</div></div></a>`);
   if(ptf.website)  cl.push(`<a href="${esc(ptf.website)}" target="_blank" rel="noopener" class="cl"><div class="cl-ic">🌐</div><div><div class="cl-lb">Site</div><div class="cl-vl ta">${esc(ptf.website.replace(/^https?:\/\//,''))}</div></div></a>`);
 
+  // ─── IMPORTANT: Use data-scroll instead of href="#section" to avoid hash conflicts ───
   el.innerHTML=`<div>
     <div class="ptf-hero">
       <div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-per')">✏ Editar</button></div>
@@ -1151,8 +1229,8 @@ function renderPtf(ptf){
         <div class="ptl ta">${esc(ptf.tagline||'')}</div>
         <p class="pbi ta">${esc(ptf.bio||'')}</p>
         <div class="pbtns">
-          <a href="#ptf-proj" class="ptfbtn ptfbtn-p">Ver Projetos</a>
-          <a href="#ptf-ct" class="ptfbtn ptfbtn-o">Contato</a>
+          <button class="ptfbtn ptfbtn-p" onclick="scrollToSection('sec-projetos')">Ver Projetos</button>
+          <button class="ptfbtn ptfbtn-o" onclick="scrollToSection('sec-contato')">Contato</button>
         </div>
       </div>
       <div class="stp">
@@ -1160,88 +1238,66 @@ function renderPtf(ptf){
         ${stats||'<span class="nd">Nenhum dado</span>'}
       </div>
     </div>
-
-    <div class="ptf-sec">
-      <div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-abt')">✏ Editar</button></div>
-      <div class="sl">01 — Sobre Mim</div>
-      <h2 class="sh ta">Quem sou<br>e o que me move</h2>
-      <div class="ag">
-        <div class="agtx"><p class="ta">${esc(ptf.about||'')}</p><div class="vtags">${vals}</div></div>
-        <div class="db">
-          <div class="db-t">// Diferenciais</div>
-          ${diffs||'<span class="nd">Nenhum diferencial</span>'}
-        </div>
+    <div class="ptf-sec"><div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-abt')">✏ Editar</button></div>
+      <div class="sl">01 — Sobre Mim</div><h2 class="sh ta">Quem sou<br>e o que me move</h2>
+      <div class="ag"><div class="agtx"><p class="ta">${esc(ptf.about||'')}</p><div class="vtags">${vals}</div></div>
+        <div class="db"><div class="db-t">// Diferenciais</div>${diffs||'<span class="nd">Nenhum</span>'}</div>
       </div>
     </div>
-
-    <div class="ptf-alt">
-      <div class="pi">
-        <div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-sk')">✏ Editar</button></div>
-        <div class="sl">02 — Habilidades</div>
-        <h2 class="sh ta">Competências</h2>
-        <div class="skg">
-          <div><div class="skt">// Hard Skills</div><div class="sktags">${hs||'<span class="nd">Nenhuma</span>'}</div></div>
-          <div><div class="skt">// Soft Skills</div><div class="sktags">${ss||'<span class="nd">Nenhuma</span>'}</div></div>
-        </div>
+    <div class="ptf-alt"><div class="pi"><div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-sk')">✏ Editar</button></div>
+      <div class="sl">02 — Habilidades</div><h2 class="sh ta">Competências</h2>
+      <div class="skg">
+        <div><div class="skt">// Hard Skills</div><div class="sktags">${hs||'<span class="nd">Nenhuma</span>'}</div></div>
+        <div><div class="skt">// Soft Skills</div><div class="sktags">${ss||'<span class="nd">Nenhuma</span>'}</div></div>
       </div>
-    </div>
-
-    <div class="ptf-sec" id="ptf-proj">
+    </div></div>
+    <div class="ptf-sec" id="sec-projetos">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.7rem;margin-bottom:-.5rem">
         <div><div class="sl">03 — Projetos</div><h2 class="sh ta">Trabalhos Relevantes</h2></div>
         <button id="apb" class="btn bo2 bsm" style="flex-shrink:0;margin-top:1rem" onclick="openPrNew()">+ Projeto</button>
       </div>
       <div class="pjl">${pjHTML}</div>
     </div>
-
-    <div class="ptf-alt">
-      <div class="pi">
-        <div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-edu')">✏ Editar</button></div>
-        <div class="sl">04 — Trajetória</div>
-        <h2 class="sh ta">Experiência &amp; Formação</h2>
-        ${exp?`<div style="margin-bottom:2rem"><div class="skt" style="margin-bottom:1rem">// Experiência</div><div class="tlg">${exp}</div></div>`:''}
-        <div class="skt" style="margin-bottom:1rem">// Formação</div>
-        <div class="edug">${edu||'<span class="nd">Nenhuma formação</span>'}</div>
-      </div>
-    </div>
-
-    <div class="ptf-alt" id="ptf-ct">
-      <div class="pi">
-        <div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-ct')">✏ Editar</button></div>
-        <div class="sl">05 — Contato</div>
-        <h2 class="sh ta">Vamos Conectar</h2>
-        <div class="ctg">
-          <div>
-            <p class="ta" style="color:#94a3b8;margin-bottom:1.5rem;font-size:calc(.94rem * var(--psc))">${esc(ptf.contactIntro||'')}</p>
-            <div class="ctl">${cl.join('')||'<span class="nd">Nenhum contato</span>'}</div>
-          </div>
-          <div class="qb">
-            <div class="qt ta">"${esc(ptf.quote||'')}"</div>
-            <div class="qa">— ${esc(ptf.name||'')}</div>
-          </div>
+    <div class="ptf-alt"><div class="pi"><div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-edu')">✏ Editar</button></div>
+      <div class="sl">04 — Trajetória</div><h2 class="sh ta">Experiência &amp; Formação</h2>
+      ${exp?`<div style="margin-bottom:2rem"><div class="skt" style="margin-bottom:1rem">// Experiência</div><div class="tlg">${exp}</div></div>`:''}
+      <div class="skt" style="margin-bottom:1rem">// Formação</div>
+      <div class="edug">${edu||'<span class="nd">Nenhuma formação</span>'}</div>
+    </div></div>
+    <div class="ptf-alt" id="sec-contato"><div class="pi"><div class="sec-ed"><button class="btn bo2 bxs" onclick="openM('m-ct')">✏ Editar</button></div>
+      <div class="sl">05 — Contato</div><h2 class="sh ta">Vamos Conectar</h2>
+      <div class="ctg">
+        <div><p class="ta" style="color:#94a3b8;margin-bottom:1.5rem;font-size:calc(.94rem * var(--psc))">${esc(ptf.contactIntro||'')}</p>
+          <div class="ctl">${cl.join('')||'<span class="nd">Nenhum contato</span>'}</div>
         </div>
+        <div class="qb"><div class="qt ta">"${esc(ptf.quote||'')}"</div><div class="qa">— ${esc(ptf.name||'')}</div></div>
       </div>
-    </div>
+    </div></div>
     <div class="pft">© ${new Date().getFullYear()} ${esc(ptf.name)} &nbsp;·&nbsp; Todos os direitos reservados</div>
   </div>`;
 }
 
-// ═══════════════════════════════════
-//  MODAL SYSTEM
-// ═══════════════════════════════════
-const M_OPEN={
-  'm-per':openPer,'m-abt':openAbt,'m-sk':openSk,'m-edu':openEduM,'m-ct':openCtM
-};
-function openM(id){
-  if(M_OPEN[id]) M_OPEN[id]();
-  else document.getElementById(id).classList.add('open');
+// ── Scroll to portfolio section WITHOUT changing URL hash ──
+function scrollToSection(id){
+  const el=document.getElementById(id);
+  if(el){
+    const offset=document.getElementById('topbar').offsetHeight+12;
+    const top=el.getBoundingClientRect().top+window.scrollY-offset;
+    window.scrollTo({top,behavior:'smooth'});
+  }
 }
+
+// ═══════════════════════════════════════
+//  MODAL SYSTEM
+// ═══════════════════════════════════════
+const M_OPEN={'m-per':openPer,'m-abt':openAbt,'m-sk':openSk,'m-edu':openEduM,'m-ct':openCtM};
+function openM(id){if(M_OPEN[id])M_OPEN[id]();else document.getElementById(id).classList.add('open')}
 function closeM(id){const el=document.getElementById(id);if(el)el.classList.remove('open')}
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open')}));
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  EDIT: PERSONAL
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function openPer(){
   const p=getPtf();if(!p)return;
   sv('ep-nm',p.name);sv('ep-ar',p.area);sv('ep-tg',p.tagline);sv('ep-bi',p.bio);
@@ -1257,18 +1313,16 @@ function addStat(){const l=gv('ep-sl'),v=gv('ep-sv');if(!l||!v)return;S.tSts.pus
 function rmSt(i){S.tSts.splice(i,1);rSts()}
 function savePer(){
   const p=getPtf();if(!p)return;
-  p.name=gv('ep-nm')||p.name;p.area=gv('ep-ar')||p.area;
-  p.tagline=gv('ep-tg');p.bio=gv('ep-bi');p.stats=[...S.tSts];
+  p.name=gv('ep-nm')||p.name;p.area=gv('ep-ar')||p.area;p.tagline=gv('ep-tg');p.bio=gv('ep-bi');p.stats=[...S.tSts];
   if(savePtf(p)){renderPtf(p);closeM('m-per');toast('Informações salvas! ✓')}
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  EDIT: ABOUT
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function openAbt(){
   const p=getPtf();if(!p)return;
-  sv('ea-tx',p.about);S.tVals=[...(p.values||[])];rVals();
-  S.tDiffs=[...(p.diffs||[])];rDiffs();
+  sv('ea-tx',p.about);S.tVals=[...(p.values||[])];rVals();S.tDiffs=[...(p.diffs||[])];rDiffs();
   document.getElementById('m-abt').classList.add('open');
 }
 function rVals(){document.getElementById('ea-vl').innerHTML=S.tVals.map((v,i)=>`<span class="tag">${esc(v)}<span class="rx" onclick="rmVl(${i})">✕</span></span>`).join('')}
@@ -1287,34 +1341,32 @@ function saveAbt(){
   if(savePtf(p)){renderPtf(p);closeM('m-abt');toast('Sobre Mim salvo! ✓')}
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  EDIT: SKILLS
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function openSk(){
   const p=getPtf();if(!p)return;
   S.tHard=[...(p.hard||[])];S.tSoft=[...(p.soft||[])];rSk('h');rSk('s');
   document.getElementById('m-sk').classList.add('open');
 }
 function rSk(t){const arr=t==='h'?S.tHard:S.tSoft;document.getElementById('es-'+t).innerHTML=arr.map((s,i)=>`<span class="tag">${esc(s)}<span class="rx" onclick="rmSk('${t}',${i})">✕</span></span>`).join('')}
-function addSkill(t){const id='es-'+t+'i',el=document.getElementById(id);const v=el.value.trim();if(!v)return;(t==='h'?S.tHard:S.tSoft).push(v);rSk(t);el.value=''}
+function addSkill(t){const el=document.getElementById('es-'+t+'i');const v=el.value.trim();if(!v)return;(t==='h'?S.tHard:S.tSoft).push(v);rSk(t);el.value=''}
 function rmSk(t,i){(t==='h'?S.tHard:S.tSoft).splice(i,1);rSk(t)}
 function saveSk(){const p=getPtf();if(!p)return;p.hard=[...S.tHard];p.soft=[...S.tSoft];if(savePtf(p)){renderPtf(p);closeM('m-sk');toast('Habilidades salvas! ✓')}}
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  EDIT: PROJECTS
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function openPrNew(){openPrEdit(-1)}
 function openPrEdit(idx){
   const p=getPtf();if(!p)return;
   document.getElementById('mp-ttl').textContent=idx>=0?'Editar Projeto':'Novo Projeto';
-  sv('ep-ix',idx);
-  const pr=idx>=0?(p.projects||[])[idx]:{};
+  sv('ep-ix',idx);const pr=idx>=0?(p.projects||[])[idx]:{};
   sv('ep-pn',pr.name||'');sv('ep-cx',pr.ctx||'');sv('ep-dc',pr.desc||'');sv('ep-rs',pr.result||'');
   document.getElementById('m-pr').classList.add('open');
 }
 function savePr(){
-  const p=getPtf();if(!p)return;
-  if(!p.projects)p.projects=[];
+  const p=getPtf();if(!p)return;if(!p.projects)p.projects=[];
   const idx=parseInt(gv('ep-ix'));
   const imgs=idx>=0?(p.projects[idx]?.imgs||[]):[];
   const pr={name:gv('ep-pn')||'Projeto',ctx:gv('ep-cx'),desc:gv('ep-dc'),result:gv('ep-rs'),imgs};
@@ -1323,14 +1375,13 @@ function savePr(){
 }
 function delPr(idx){
   if(!confirm('Remover este projeto?'))return;
-  const p=getPtf();if(!p)return;
-  p.projects.splice(idx,1);
+  const p=getPtf();if(!p)return;p.projects.splice(idx,1);
   if(savePtf(p)){renderPtf(p);toast('Projeto removido.')}
 }
 
-// ═══════════════════════════════════
-//  EDIT: EDU / EXP
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
+//  EDIT: EDU/EXP
+// ═══════════════════════════════════════
 function openEduM(){
   const p=getPtf();if(!p)return;
   S.tEdu=[...(p.education||[])];S.tExp=[...(p.experience||[])];rEd();rEx();
@@ -1352,9 +1403,9 @@ function addExp(){const t=gv('ee-xt'),o=gv('ee-xo'),d=gv('ee-xd'),s=gv('ee-xs');
 function rmEx(i){S.tExp.splice(i,1);rEx()}
 function saveEdu(){const p=getPtf();if(!p)return;p.education=[...S.tEdu];p.experience=[...S.tExp];if(savePtf(p)){renderPtf(p);closeM('m-edu');toast('Trajetória salva! ✓')}}
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  EDIT: CONTACT
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function openCtM(){
   const p=getPtf();if(!p)return;
   sv('ec-em',p.email);sv('ec-li',p.linkedin);sv('ec-gh',p.github);
@@ -1368,9 +1419,9 @@ function saveCt(){
   if(savePtf(p)){renderPtf(p);closeM('m-ct');toast('Contato salvo! ✓')}
 }
 
-// ═══════════════════════════════════
-//  IMAGE UPLOAD (compressed)
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
+//  IMAGE UPLOAD
+// ═══════════════════════════════════════
 function compress(file,mw,q,cb){
   const r=new FileReader();r.onload=e=>{
     const img=new Image();img.onload=()=>{
@@ -1382,45 +1433,30 @@ function compress(file,mw,q,cb){
     };img.src=e.target.result;
   };r.readAsDataURL(file);
 }
-
 function onPhClick(){if(!S.editMode)return;document.getElementById('fi-ph').click()}
-
 document.getElementById('fi-ph').addEventListener('change',function(){
   if(!this.files[0])return;
   compress(this.files[0],480,.72,src=>{
     const p=getPtf();if(!p)return;p.profilePhoto=src;
-    if(savePtf(p)){
-      const ci=document.querySelector('.ph-circ');
-      if(ci){ci.querySelector('img').src=src;ci.classList.add('fp');}
-      toast('Foto de perfil salva! ✓');
-    }
+    if(savePtf(p)){const ci=document.querySelector('.ph-circ');if(ci){ci.querySelector('img').src=src;ci.classList.add('fp');}toast('Foto salva! ✓')}
   });this.value='';
 });
-
 function slAdd(pi,e){if(e)e.stopPropagation();if(!S.editMode)return;S.pPi=pi;S.pSi=-1;document.getElementById('fi-pi').click()}
 function slChg(pi,si,e){if(e)e.stopPropagation();if(!S.editMode)return;S.pPi=pi;S.pSi=si;document.getElementById('fi-pi').click()}
-function slDel(pi,si){
-  if(!S.editMode)return;
-  const p=getPtf();if(!p)return;
-  p.projects[pi].imgs.splice(si,1);
-  if(savePtf(p)){renderPtf(p);toast('Imagem removida.')}
-}
+function slDel(pi,si){if(!S.editMode)return;const p=getPtf();if(!p)return;p.projects[pi].imgs.splice(si,1);if(savePtf(p)){renderPtf(p);toast('Imagem removida.')}}
 document.getElementById('fi-pi').addEventListener('change',function(){
   if(!this.files[0]||S.pPi<0)return;
   compress(this.files[0],800,.72,src=>{
-    const p=getPtf();if(!p)return;
-    if(!p.projects[S.pPi].imgs)p.projects[S.pPi].imgs=[];
-    if(S.pSi>=0)p.projects[S.pPi].imgs[S.pSi]=src;
-    else p.projects[S.pPi].imgs.push(src);
+    const p=getPtf();if(!p)return;if(!p.projects[S.pPi].imgs)p.projects[S.pPi].imgs=[];
+    if(S.pSi>=0)p.projects[S.pPi].imgs[S.pSi]=src;else p.projects[S.pPi].imgs.push(src);
     if(savePtf(p)){renderPtf(p);toast('Imagem salva! ✓')}
   });this.value='';S.pPi=-1;S.pSi=-1;
 });
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  CUSTOMIZATION
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function setPV(k,v){document.getElementById('ptf').style.setProperty('--'+k,v)}
-
 function applyCz(cz){
   const t=THEMES[cz.theme||'dark']||THEMES.dark;
   setPV('pb',t.pb);setPV('ps',t.ps);setPV('ps2',t.ps);setPV('pbr',t.pbr);setPV('pt',t.pt);setPV('pm',t.pm);
@@ -1429,14 +1465,12 @@ function applyCz(cz){
   setPV('pbf',`'${cz.bfont||'DM Sans'}',sans-serif`);
   setPV('psc',cz.scale||1);setPV('pal',cz.align||'left');
 }
-
 function buildThG(){
   document.getElementById('czthemes').innerHTML=Object.entries(THEMES).map(([k,t])=>
     `<button class="thb${S.czTheme===k?' on':''}" onclick="czTh('${k}',this)">
       <span class="th-d" style="background:${t.pb};border:2px solid ${t.pbr}"></span>${t.lbl}
     </button>`).join('');
 }
-
 function openCz(){
   const p=getPtf();if(!p)return;const cz=p.cz||{};
   S.czTheme=cz.theme||'dark';S.czSc=String(cz.scale||1);S.czAl=cz.align||'left';
@@ -1450,7 +1484,6 @@ function openCz(){
   document.getElementById('czp').classList.add('open');
 }
 function closeCz(){document.getElementById('czp').classList.remove('open')}
-
 function czTab(btn){
   const tab=btn.dataset.tab;
   document.querySelectorAll('.czt').forEach(b=>b.classList.remove('on'));
@@ -1479,9 +1512,9 @@ function czSave(){
   if(savePtf(p))toast('Personalização salva! ✓');
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  GALLERY
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 function renderGallery(){
   const ptfs=DB.ptfs(),grid=document.getElementById('gg');
   const keys=Object.keys(ptfs);
@@ -1491,12 +1524,11 @@ function renderGallery(){
     return;
   }
   grid.innerHTML=keys.map(id=>{
-    const p=ptfs[id];
-    const ini=(p.name||'?').split(' ').slice(0,2).map(n=>n[0].toUpperCase()).join('');
+    const p=ptfs[id];const ini=(p.name||'?').split(' ').slice(0,2).map(n=>n[0].toUpperCase()).join('');
     return `<div class="pc" onclick="openPtf('${id}')">
       <div class="pc-cov">
         ${p.profilePhoto?`<img class="pc-img" src="${p.profilePhoto}" alt="">`:`<div class="pc-ini">${esc(ini)}</div>`}
-        <button class="pc-link" onclick="event.stopPropagation();cpLink('${id}')">🔗 Link</button>
+        <button class="pc-lnk" onclick="event.stopPropagation();cpLink('${id}')">🔗 Link</button>
         <div class="pc-dot"></div>
       </div>
       <div class="pc-body">
@@ -1507,25 +1539,26 @@ function renderGallery(){
     </div>`;
   }).join('');
 }
-
 function cpLink(pid){
-  const url=window.location.href.split('#')[0]+'#ptf/'+pid;
+  const url=window.location.href.split('#')[0]+PORTFOLIO_HASH_PREFIX+pid;
   if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast('🔗 Link copiado!'))}
   else{const i=document.createElement('input');i.value=url;document.body.appendChild(i);i.select();document.execCommand('copy');document.body.removeChild(i);toast('🔗 Link copiado!')}
 }
 
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 //  INIT
-// ═══════════════════════════════════
+// ═══════════════════════════════════════
 restoreSess();
-renderNav(); // renders nav + hero buttons based on auth state
+renderNav();
+// Default recovery tab style
+recoverMode('account');
 
-// Handle direct portfolio link via hash
+// Handle direct portfolio link on load
 (function(){
   const r=parseHash();
   if(r.page==='ptf'){
     const ptf=DB.ptfs()[r.id];
-    if(ptf) openPtf(r.id, !!(S.user&&S.user.pid===r.id));
+    if(ptf) openPtf(r.id,!!(S.user&&S.user.pid===r.id));
     else toast('Portfólio não encontrado.',1);
   }
 })();
